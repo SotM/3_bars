@@ -62,4 +62,6 @@ if __name__ == '__main__':
     bars_data = load_data('bars.json')
     print('min:', get_smallest_bar(bars_data))
     print('max:', get_biggest_bar(bars_data))
-    print('closest:', get_closest_bar(bars_data, 37.2082781854611, 55.965296871411425))
+    input_value1 = float(input())
+    input_value2 = float(input())
+    print('closest:', get_closest_bar(bars_data, input_value1, input_value2))
