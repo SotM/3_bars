@@ -1,32 +1,31 @@
 import json
+import sys
+import os.path
 from math import cos, asin, sqrt
+
+bar_latitude = 0
+bar_longitude = 0
 
 
 def load_data(filepath):
-    file_handle = open(filepath, 'r', encoding='utf8')
-    json_data = json.loads(file_handle.read())
-    file_handle.close()
-    return json_data['features']
+    with open(filepath, 'r', encoding='utf8') as file_handle:
+        bars_data = json.loads(file_handle.read())
+    return bars_data['features']
 
 
-def get_biggest_bar(input_bars_data):
-    max_count = 0
-    for element in input_bars_data:
-        properties = element['properties']
-        attributes = properties['Attributes']
-        seats_count = attributes['SeatsCount']
-        max_count = max(seats_count, max_count)
-    return max_count
+def get_sets_count(element):
+    properties = element['properties']
+    attributes = properties['Attributes']
+    seats_count = attributes['SeatsCount']
+    return seats_count
 
 
-def get_smallest_bar(input_bars_data):
-    min_count = 99999
-    for element in input_bars_data:
-        properties = element['properties']
-        attributes = properties['Attributes']
-        seats_count = attributes['SeatsCount']
-        min_count = min(seats_count, min_count)
-    return min_count
+def get_biggest_bar(bars_data):
+    return max(bars_data, key=get_sets_count)
+
+
+def get_smallest_bar(bars_data):
+    return min(bars_data, key=get_sets_count)
 
 
 def distance_between_points(lat1, lon1, lat2, lon2):
@@ -38,20 +37,36 @@ def distance_between_points(lat1, lon1, lat2, lon2):
     return 12742 * asin(sqrt(a))    # 2*R*asin...
 
 
-def get_closest_bar(input_bars_data, longitude, latitude):
-    min_dist = 99999
-    for element in input_bars_data:
-        geometry = element['geometry']
-        coordinates = geometry['coordinates']
-        dist = distance_between_points(latitude, longitude, coordinates[1], coordinates[0])
-        min_dist = min(dist, min_dist)
-    return min_dist
+def get_distance(element):
+    geometry = element['geometry']
+    coordinates = geometry['coordinates']
+    distance = distance_between_points(bar_latitude, bar_longitude, coordinates[1], coordinates[0])
+    return distance
+
+
+def get_closest_bar(bars_data):
+    return min(bars_data, key=get_distance)
 
 
 if __name__ == '__main__':
-    bars_data = load_data('bars.json')
-    print('min:', get_smallest_bar(bars_data))
-    print('max:', get_biggest_bar(bars_data))
-    input_value1 = float(input())
-    input_value2 = float(input())
-    print('closest:', get_closest_bar(bars_data, input_value1, input_value2))
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        if os.path.exists(filename):
+            bars_data = load_data(filename)
+            print('min:', get_smallest_bar(bars_data))
+            print('max:', get_biggest_bar(bars_data))
+            try:
+                print("Enter bar's longitude (eg. 37.63): ", end='')
+                bar_longitude = float(input())
+                # bar_longitude = 37.635709999610896
+                print("Enter bar's latitude (eg. 55.80): ", end='')
+                bar_latitude = float(input())
+                # bar_latitude = 55.805575000158512
+            except ValueError:
+                print("Entered values aren't correct coordinates")
+            else:
+                print('closest:', get_closest_bar(bars_data))
+        else:
+            print("Error: File " + filename + " doesn't exist")
+    else:
+        print('Error: filename is not specified')
