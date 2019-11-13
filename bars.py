@@ -9,9 +9,9 @@ def load_data(filepath):
     return json_data['features']
 
 
-def get_biggest_bar(data):
+def get_biggest_bar(input_bars_data):
     max_count = 0
-    for element in data:
+    for element in input_bars_data:
         properties = element['properties']
         attributes = properties['Attributes']
         seats_count = attributes['SeatsCount']
@@ -19,9 +19,9 @@ def get_biggest_bar(data):
     return max_count
 
 
-def get_smallest_bar(data):
+def get_smallest_bar(input_bars_data):
     min_count = 99999
-    for element in data:
+    for element in input_bars_data:
         properties = element['properties']
         attributes = properties['Attributes']
         seats_count = attributes['SeatsCount']
@@ -38,9 +38,9 @@ def distance_between_points(lat1, lon1, lat2, lon2):
     return 12742 * asin(sqrt(a))    # 2*R*asin...
 
 
-def get_closest_bar(data, longitude, latitude):
+def get_closest_bar(input_bars_data, longitude, latitude):
     min_dist = 99999
-    for element in data:
+    for element in input_bars_data:
         geometry = element['geometry']
         coordinates = geometry['coordinates']
         dist = distance_between_points(latitude, longitude, coordinates[1], coordinates[0])
