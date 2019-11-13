@@ -3,59 +3,49 @@ from math import cos, asin, sqrt
 
 
 def load_data(filepath):
-    fin = open(filepath, 'r', encoding='utf8')
-    data = json.loads(fin.read())
-    element_list = data['features']
-    fin.close()
-    return element_list
+    file_handle = open(filepath, 'r', encoding='utf8')
+    json_data = json.loads(file_handle.read())
+    file_handle.close()
+    return json_data['features']
 
 
 def get_biggest_bar(data):
     max_count = 0
-    max_element = ''
     for element in data:
         properties = element['properties']
         attributes = properties['Attributes']
         seats_count = attributes['SeatsCount']
-        if seats_count > max_count:
-            max_count = seats_count
-            max_element = element
-    return max_element
+        max_count = max(seats_count, max_count)
+    return max_count
 
 
 def get_smallest_bar(data):
     min_count = 99999
-    min_element = ''
     for element in data:
         properties = element['properties']
         attributes = properties['Attributes']
         seats_count = attributes['SeatsCount']
-        if seats_count < min_count:
-            min_count = seats_count
-            min_element = element
-    return min_element
+        min_count = min(seats_count, min_count)
+    return min_count
 
 
-def distance(lat1, lon1, lat2, lon2):
+def distance_between_points(lat1, lon1, lat2, lon2):
     if (lat1 == lat2) and (lon1 == lon2):
         return 0
 
-    p = 0.017453292519943295     #Pi/180
-    a = 0.5 - cos((lat2 - lat1) * p)/2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
-    return 12742 * asin(sqrt(a)) #2*R*asin...
+    pi_div_180 = 0.017453292519943295        # Pi/180
+    a = 0.5 - cos((lat2 - lat1) * pi_div_180)/2 + cos(lat1 * pi_div_180) * cos(lat2 * pi_div_180) * (1 - cos((lon2 - lon1) * pi_div_180)) / 2
+    return 12742 * asin(sqrt(a))    # 2*R*asin...
 
 
 def get_closest_bar(data, longitude, latitude):
     min_dist = 99999
-    min_element = ''
     for element in data:
         geometry = element['geometry']
         coordinates = geometry['coordinates']
-        dist = distance(latitude, longitude, coordinates[1], coordinates[0])
-        if dist < min_dist:
-            min_dist = dist
-            min_element = element
-    return min_element
+        dist = distance_between_points(latitude, longitude, coordinates[1], coordinates[0])
+        min_dist = min(dist, min_dist)
+    return min_dist
 
 
 if __name__ == '__main__':
